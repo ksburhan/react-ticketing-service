@@ -1,5 +1,5 @@
-const Banana = () => {
+const index = () => {
     return <h1>Landing page </h1>
 };
 
-export default Banana;
+export default index;
