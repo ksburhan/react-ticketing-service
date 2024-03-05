@@ -1,12 +1,10 @@
 import express, { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import jwt from 'jsonwebtoken';
+import { validateRequest, BadRequestError } from '@monkeytickets/common';
 
 import { Password } from '../services/password';
 import { User } from '../models/users';
-import { RequestValidationError } from '../errors/request-validation-error';
-import { validateRequest } from '../middleware/validate-request';
-import { BadRequestError } from '../errors/bad-request-error';
 
 const router = express.Router();
 
@@ -18,18 +16,18 @@ router.post('/api/users/signin', [
         .trim()
         .notEmpty()
         .withMessage('Password must be set')
-    ],
+],
     validateRequest,
     async (req: Request, res: Response) => {
         const { email, password } = req.body;
 
         const existingUser = await User.findOne({ email });
-        if(!existingUser) {
+        if (!existingUser) {
             throw new BadRequestError('Invalid credentials');
         }
 
         const passwordsMatch = await Password.compare(existingUser.password, password);
-        if(!passwordsMatch) {
+        if (!passwordsMatch) {
             throw new BadRequestError('Invalid credentials');
         }
 
@@ -37,7 +35,7 @@ router.post('/api/users/signin', [
             id: existingUser.id,
             email: existingUser.email,
         }, process.env.JWT_KEY!);
-    
+
         req.session = { jwt: userJwt };
 
         res.status(200).send(existingUser);
