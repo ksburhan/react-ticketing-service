@@ -1,13 +1,16 @@
 import express, { Request, Response } from 'express';
-// import { Order } from '../models/orders';
+import { requireAuth } from '@monkeytickets/common';
+
+import { Order } from '../models/orders';
 
 const router = express.Router();
 
-router.get('/api/orders', async (req: Request, res: Response) => {
-    // const tickets = await Ticket.find({});
+router.get('/api/orders', requireAuth, async (req: Request, res: Response) => {
+    const orders = await Order.find({
+        userId: req.currentUser!.id
+    }).populate('ticket');
 
-    // res.send(tickets);
-    res.send({});
+    res.send(orders);
 });
 
 export { router as indexOrderRouter };
