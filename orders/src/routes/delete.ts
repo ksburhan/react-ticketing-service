@@ -1,33 +1,31 @@
 import express, { Request, Response } from 'express';
-import { body } from 'express-validator';
 import {
-    validateRequest,
     requireAuth,
     NotAuthorizedError,
-    NotFoundError
+    NotFoundError,
+    OrderStatus
 } from '@monkeytickets/common';
 
-// import { Order } from '../models/orders';
-import { natsWrapper } from '../nats-wrapper';
+import { Order } from '../models/orders';
 
 const router = express.Router();
 
-router.delete(
-    '/api/tickets/:id',
-    requireAuth,
-    [
-        body('title')
-            .not()
-            .isEmpty()
-            .withMessage('Title is required'),
-        body('price')
-            .isFloat({ gt: 0 }).withMessage('Price must be greater than 0')
-    ],
-    validateRequest,
-    async (req: Request, res: Response) => {
-        const ticket = {};
+router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-        res.send(ticket);
-    });
+    const order = await Order.findById(id);
+
+    if (!order) {
+        throw new NotFoundError();
+    }
+    if (order.userId !== req.currentUser!.id) {
+        throw new NotAuthorizedError();
+    }
+
+    order.status = OrderStatus.Cancelled;
+    await order.save();
+
+    res.status(204).send(order);
+});
 
 export { router as deleteOrderRouter };
