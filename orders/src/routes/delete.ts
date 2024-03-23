@@ -7,13 +7,15 @@ import {
 } from '@monkeytickets/common';
 
 import { Order } from '../models/orders';
+import { natsWrapper } from '../nats-wrapper';
+import { OrderCancelledPublisher } from '../events/publishers/order-cancelled-publisher';
 
 const router = express.Router();
 
 router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).populate('ticket');
 
     if (!order) {
         throw new NotFoundError();
@@ -24,6 +26,13 @@ router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response
 
     order.status = OrderStatus.Cancelled;
     await order.save();
+
+    new OrderCancelledPublisher(natsWrapper.client).publish({
+        id: order.id,
+        ticket: {
+            id: order.ticket.id,
+        },
+    });
 
     res.status(204).send(order);
 });
