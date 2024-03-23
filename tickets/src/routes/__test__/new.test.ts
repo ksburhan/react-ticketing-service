@@ -75,15 +75,15 @@ it('creates a ticket with valid inputs', async () => {
     expect(tickets[0].title).toEqual('test');
 });
 
-// it('publishes an event', async () => {
-//     await request(app)
-//         .post('/api/tickets')
-//         .set('Cookie', global.signin())
-//         .send({
-//             title: 'test',
-//             price: 20,
-//         })
-//         .expect(201);
+it('publishes an event', async () => {
+    await request(app)
+        .post('/api/tickets')
+        .set('Cookie', global.signin())
+        .send({
+            title: 'test',
+            price: 20,
+        })
+        .expect(201);
 
-//     expect(natsWrapper.client.publish).toHaveBeenCalled();
-// });
+    expect(natsWrapper.client.publish).toHaveBeenCalled();
+});
