@@ -21,6 +21,7 @@ interface OrderModel extends mongoose.Model<OrderDocument> {
 // interface that describes properties Order Document has
 interface OrderDocument extends mongoose.Document {
     userId: string;
+    version: number;
     status: OrderStatus;
     expiresAt: Date;
     ticket: TicketDocument;
