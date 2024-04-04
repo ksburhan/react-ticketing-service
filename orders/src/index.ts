@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { app } from "./app";
 import { natsWrapper } from "./nats-wrapper";
 import { TicketCreatedListener } from "./events/listeners/ticket-created-listeners";
-import { TicketUpdatedListener } from "./events/listeners/ticket-updates-listeners";
+import { TicketUpdatedListener } from "./events/listeners/ticket-updated-listeners";
 
 const start = async () => {
   if (!process.env.JWT_KEY) {
