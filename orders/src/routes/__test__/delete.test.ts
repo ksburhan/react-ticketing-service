@@ -8,8 +8,9 @@ import { Order, OrderStatus } from "../../models/orders";
 
 it('marks an order as cancelled', async () => {
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
     });
     await ticket.save();
 
@@ -34,6 +35,7 @@ it('marks an order as cancelled', async () => {
 
 it('publishes an event', async () => {
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });
