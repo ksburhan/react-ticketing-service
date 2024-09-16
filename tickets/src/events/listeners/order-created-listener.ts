@@ -2,6 +2,7 @@ import { Listener, OrderCreatedEvent, Subjects } from "@monkeytickets/common";
 import { queueGroupName } from "./queue-group-name";
 import { Message } from "node-nats-streaming";
 import { Ticket } from "../../models/tickets";
+import { TicketUpdatedPublisher } from "../publishers/ticket-updated-publisher";
 
 export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
     subject: Subjects.OrderCreated = Subjects.OrderCreated;
@@ -21,6 +22,7 @@ export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
 
         // Save the ticket
         await ticket.save()
+        new TicketUpdatedPublisher(this.client)
 
         // ack the message
         msg.ack()
