@@ -1,15 +1,15 @@
-import { Listener, OrderCreatedEvent, Subjects } from "@monkeytickets/common";
+import { Listener, OrderCancelledEvent, Subjects } from "@monkeytickets/common";
 import { queueGroupName } from "./queue-group-name";
 import { Message } from "node-nats-streaming";
 import { Ticket } from "../../models/tickets";
 import { TicketUpdatedPublisher } from "../publishers/ticket-updated-publisher";
 
-export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
-    subject: Subjects.OrderCreated = Subjects.OrderCreated;
+export class OrderCancelledListener extends Listener<OrderCancelledEvent> {
+    subject: Subjects.OrderCancelled = Subjects.OrderCancelled;
     queueGroupName = queueGroupName;
 
-    async onMessage(data: OrderCreatedEvent['data'], msg: Message) {
-        // Find ticket that order is reserving
+    async onMessage(data: OrderCancelledEvent['data'], msg: Message) {
+        // Find ticket that order is unreserving
         const ticket = await Ticket.findById(data.ticket.id);
 
         // If ticket not exist, error
@@ -17,8 +17,8 @@ export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
             throw new Error('Ticket not found');
         }
 
-        // Mark ticket as being reserved
-        ticket.set({ orderId: data.id })
+        // Mark ticket as being unreserved
+        ticket.set({ orderId: undefined })
 
         // Save the ticket
         await ticket.save()
