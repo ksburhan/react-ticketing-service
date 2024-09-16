@@ -1,6 +1,6 @@
 import { TicketCreatedEvent } from "@monkeytickets/common";
 import { natsWrapper } from "../../../nats-wrapper";
-import { TicketCreatedListener } from "../ticket-created-listeners";
+import { TicketCreatedListener } from "../ticket-created-listener";
 import mongoose from "mongoose";
 import { Message } from "node-nats-streaming";
 import { Ticket } from "../../../models/tickets";
