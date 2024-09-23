@@ -2,6 +2,7 @@ import { BadRequestError, NotAuthorizedError, NotFoundError, OrderStatus, requir
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { Order } from '../models/orders';
+import { stripe } from '../stripe';
 
 const router = express.Router();
 
@@ -31,7 +32,13 @@ router.post('/api/payments',
             throw new BadRequestError('Cannot pay for cancelled order!');
         }
 
-        res.send({ succes: true });
+        await stripe.charges.create({
+            currency: 'eur',
+            amount: order.price * 100,
+            source: token,
+        });
+
+        res.status(201).send({ succes: true });
     });
 
 export { router as createChargeRouter };
