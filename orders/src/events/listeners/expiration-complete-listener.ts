@@ -2,7 +2,6 @@ import { ExpirationCompleteEvent, Listener, OrderStatus, Subjects } from "@monke
 import { Message } from "node-nats-streaming";
 
 import { queueGroupName } from "./queue-group-name";
-import { Ticket } from "../../models/tickets";
 import { Order } from "../../models/orders";
 import { OrderCancelledPublisher } from "../publishers/order-cancelled-publisher";
 
@@ -15,6 +14,10 @@ export class ExpirationCompleteListener extends Listener<ExpirationCompleteEvent
 
         if (!order) {
             throw new Error('Order not found');
+        }
+
+        if (order.status === OrderStatus.Complete) {
+            return msg.ack();
         }
 
         order.set({
