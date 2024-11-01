@@ -11,11 +11,11 @@ const router = express.Router();
 router.post('/api/users/signin', [
     body('email')
         .isEmail()
-        .withMessage('Email must be valid!'),
+        .withMessage('Email must be valid'),
     body('password')
         .trim()
         .notEmpty()
-        .withMessage('Password must be set!')
+        .withMessage('Password must be set')
 ],
     validateRequest,
     async (req: Request, res: Response) => {
