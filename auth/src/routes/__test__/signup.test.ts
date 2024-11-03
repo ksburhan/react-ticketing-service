@@ -6,7 +6,8 @@ it('returns a 201 on succesful signup', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: 'testUser'
         })
         .expect(201);
 });
@@ -16,7 +17,8 @@ it('returns a 400 with an invalid email', async () => {
         .post('/api/users/signup')
         .send({
             email: "testtest.com",
-            password: 'password'
+            password: 'password',
+            username: 'test'
         })
         .expect(400);
 });
@@ -26,15 +28,27 @@ it('returns a 400 with an invalid password', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'p'
+            password: 'p',
+            username: "testUser"
         })
         .expect(400);
 });
 
-it('returns a 400 with missing email and password', async () => {
+it('returns a 400 with an invalid username', async () => {
     return request(app)
         .post('/api/users/signup')
-        .send({ })
+        .send({
+            email: "test@test.com",
+            password: 'password',
+            username: "t"
+        })
+        .expect(400);
+});
+
+it('returns a 400 with missing email and password and username', async () => {
+    return request(app)
+        .post('/api/users/signup')
+        .send({})
         .expect(400);
 });
 
@@ -43,7 +57,8 @@ it('disallows duplicate emails', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: "testUser"
         })
         .expect(201);
 
@@ -51,7 +66,28 @@ it('disallows duplicate emails', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: "testUser1"
+        })
+        .expect(400);
+});
+
+it('disallows duplicate usernames', async () => {
+    await request(app)
+        .post('/api/users/signup')
+        .send({
+            email: "test@test.com",
+            password: 'password',
+            username: "testUser"
+        })
+        .expect(201);
+
+    return request(app)
+        .post('/api/users/signup')
+        .send({
+            email: "test1@test.com",
+            password: 'password',
+            username: "testUser"
         })
         .expect(400);
 });
@@ -61,7 +97,8 @@ it('sets a cookie after successful signup', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: "testUser"
         })
         .expect(201);
 
