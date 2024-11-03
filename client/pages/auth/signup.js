@@ -5,10 +5,11 @@ import useRequest from '../../hooks/use-request';
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const { doRequest, errors } = useRequest({
         url: '/api/users/signup',
         method: 'post',
-        body: { email, password },
+        body: { email, password, username },
         onSuccess: () => Router.push('/')
     });
 
@@ -34,6 +35,14 @@ const SignUp = () => {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                className="form-control"
+            />
+        </div>
+        <div className="form-group">
+            <label>Username</label>
+            <input
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 className="form-control"
             />
         </div>
