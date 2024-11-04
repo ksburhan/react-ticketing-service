@@ -7,8 +7,10 @@ export interface TicketUpdatedEvent {
         version: number;
         title: string;
         price: number;
-        userId: string;
-        username: string;
+        owner: {
+            id: string;
+            username: string;
+        }
         orderId?: string;
     };
 }
