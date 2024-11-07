@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import { validateRequest, BadRequestError } from '@monkeytickets/common';
 
 import { User } from '../models/users';
+import { UserCreatedPublisher } from '../events/user-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -43,6 +45,11 @@ router.post('/api/users/signup', [
         req.session = { jwt: userJwt };
 
         res.status(201).send(user);
+
+        new UserCreatedPublisher(natsWrapper.client).publish({
+            id: user.id,
+            username: user.username,
+        });
     });
 
 export { router as signupRouter };
