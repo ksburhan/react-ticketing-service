@@ -11,10 +11,10 @@ interface UserModel extends mongoose.Model<UserDocument> {
 }
 
 export interface UserDocument extends mongoose.Document {
-    username: string
+    username: string;
 }
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         username: {
             type: String,
@@ -31,13 +31,13 @@ const UserSchema = new mongoose.Schema(
     }
 );
 
-UserSchema.set('versionKey', 'version');
-UserSchema.plugin(updateIfCurrentPlugin);
+userSchema.statics.build = (attrs: UserAttributes) => {
+    return new User({
+        _id: attrs.id,
+        username: attrs.username,
+    });
+};
 
-UserSchema.statics.build = (attrs: UserAttributes) => {
-    return new User(attrs);
-}
-
-const User = mongoose.model<UserDocument, UserModel>('User', UserSchema);
+const User = mongoose.model<UserDocument, UserModel>('User', userSchema);
 
 export { User };

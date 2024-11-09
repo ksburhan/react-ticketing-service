@@ -4,10 +4,11 @@ import { app } from "../../app";
 import { Ticket } from '../../models/tickets';
 import { natsWrapper } from "../../nats-wrapper";
 import { User } from "../../models/users";
+import mongoose from "mongoose";
 
 const createUser = async () => {
     const user = User.build({
-        id: '123',
+        id: new mongoose.Types.ObjectId().toHexString(),
         username: 'testUser'
     })
     await user.save()

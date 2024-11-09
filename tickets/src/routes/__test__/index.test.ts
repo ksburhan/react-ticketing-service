@@ -1,6 +1,7 @@
 import request from "supertest";
 import { app } from "../../app";
 import { User } from "../../models/users";
+import mongoose from "mongoose";
 
 const createTicket = (id: string) => {
     return request(app)
@@ -14,7 +15,7 @@ const createTicket = (id: string) => {
 
 it('can fetch a list of tickets', async () => {
     const user = User.build({
-        id: '123',
+        id: new mongoose.Types.ObjectId().toHexString(),
         username: 'testUser'
     })
     await user.save()

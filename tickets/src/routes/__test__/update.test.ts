@@ -8,7 +8,7 @@ import { User } from "../../models/users";
 
 const createUser = async () => {
     const user = User.build({
-        id: '123',
+        id: new mongoose.Types.ObjectId().toHexString(),
         username: 'testUser'
     })
     await user.save()

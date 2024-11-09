@@ -1,10 +1,11 @@
+import mongoose from "mongoose";
 import { Ticket } from "../tickets";
 import { User } from "../users";
 
 it('implements optimistic concurrency control', async () => {
 
     const user = User.build({
-        id: '123',
+        id: new mongoose.Types.ObjectId().toHexString(),
         username: 'testUser'
     })
     // Create instance of ticket

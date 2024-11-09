@@ -5,7 +5,7 @@ import { User } from "../../models/users";
 import { Message } from "node-nats-streaming";
 
 export class UserCreatedListener extends Listener<UserCreatedEvent> {
-    subject: Subjects.UserCreated = Subjects.UserCreated;
+    readonly subject = Subjects.UserCreated;
     queueGroupName = queueGroupName;
 
     async onMessage(data: UserCreatedEvent['data'], msg: Message) {
