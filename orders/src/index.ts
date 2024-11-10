@@ -5,6 +5,7 @@ import { TicketCreatedListener } from "./events/listeners/ticket-created-listene
 import { TicketUpdatedListener } from "./events/listeners/ticket-updated-listener";
 import { ExpirationCompleteListener } from "./events/listeners/expiration-complete-listener";
 import { PaymentCreatedListener } from "./events/listeners/payment-created-listener";
+import { UserCreatedListener } from "./events/listeners/user-created-listener";
 
 const start = async () => {
   if (!process.env.JWT_KEY) {
@@ -34,6 +35,7 @@ const start = async () => {
     process.on('SIGINT', () => natsWrapper.client.close());
     process.on('SIGTERM', () => natsWrapper.client.close());
 
+    new UserCreatedListener(natsWrapper.client).listen();
     new TicketCreatedListener(natsWrapper.client).listen();
     new TicketUpdatedListener(natsWrapper.client).listen();
     new ExpirationCompleteListener(natsWrapper.client).listen();

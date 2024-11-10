@@ -3,16 +3,30 @@ import mongoose from "mongoose";
 
 import { app } from "../../app";
 import { Ticket } from "../../models/tickets";
+import { User } from "../../models/users";
 
 it('returns the order', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser1'
+    })
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
-    const user = global.signin();
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser2'
+    })
+    await buyer.save();
+
+    const user = global.signin(buyer.id);
 
     const { body: order } = await request(app)
         .post('/api/orders')
@@ -32,18 +46,29 @@ it('returns the order', async () => {
 });
 
 it('returns an error if user tries other users order', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
-    const user = global.signin();
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await buyer.save();
 
     const { body: order } = await request(app)
         .post('/api/orders')
-        .set('Cookie', user)
+        .set('Cookie', global.signin(buyer.id))
         .send({
             ticketId: ticket.id
         })
