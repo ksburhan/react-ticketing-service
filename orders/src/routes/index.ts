@@ -14,7 +14,13 @@ router.get('/api/orders', requireAuth, async (req: Request, res: Response) => {
     }
 
     const orders = await Order.find({ buyer })
-        .populate('ticket')
+        .populate({
+            path: 'ticket',
+            populate: {
+                path: 'owner',
+                model: 'User'
+            }
+        })
         .populate('buyer');
 
     res.send(orders);

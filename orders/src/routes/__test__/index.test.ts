@@ -63,4 +63,6 @@ it('can fetch a list of orders for user', async () => {
     expect(response.body[0].id).toEqual(orderOne.id);
     expect(response.body[1].id).toEqual(orderTwo.id);
     expect(response.body[0].ticket.id).toEqual(ticket2.id);
+    expect(response.body[0].ticket.owner.id).toEqual(user2.id);
+    expect(response.body[0].ticket.owner.username).toEqual(user2.username);
 });

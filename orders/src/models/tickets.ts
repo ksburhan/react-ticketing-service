@@ -23,7 +23,7 @@ export interface TicketDocument extends mongoose.Document {
     title: string;
     price: number;
     version: number;
-    buyer: UserDocument;
+    owner: UserDocument;
     isReserved(): Promise<boolean>;
 }
 
