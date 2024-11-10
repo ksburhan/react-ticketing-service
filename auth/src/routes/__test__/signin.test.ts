@@ -16,7 +16,8 @@ it('fails when incorrect password is supplied', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: "testUser"
         })
         .expect(201);
 
@@ -34,7 +35,8 @@ it('responds with cookie when correct credentials', async () => {
         .post('/api/users/signup')
         .send({
             email: "test@test.com",
-            password: 'password'
+            password: 'password',
+            username: "testUser"
         })
         .expect(201);
 
@@ -71,6 +73,6 @@ it('returns a 400 with no password', async () => {
 it('returns a 400 with missing email and password', async () => {
     return request(app)
         .post('/api/users/signin')
-        .send({ })
+        .send({})
         .expect(400);
 });

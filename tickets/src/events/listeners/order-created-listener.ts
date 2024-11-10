@@ -10,7 +10,7 @@ export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
 
     async onMessage(data: OrderCreatedEvent['data'], msg: Message) {
         // Find ticket that order is reserving
-        const ticket = await Ticket.findById(data.ticket.id);
+        const ticket = await Ticket.findById(data.ticket.id).populate('owner');
 
         // If ticket not exist, error
         if (!ticket) {
@@ -26,7 +26,10 @@ export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
             id: ticket.id,
             price: ticket.price,
             title: ticket.title,
-            userId: ticket.userId,
+            owner: {
+                id: ticket.owner.id,
+                username: ticket.owner.username
+            },
             orderId: ticket.orderId,
             version: ticket.version,
         })

@@ -2,12 +2,14 @@ import mongoose from "mongoose";
 
 import { Order, OrderStatus } from "./orders";
 import { updateIfCurrentPlugin } from "mongoose-update-if-current";
+import { UserDocument } from "./users";
 
 // interface that describes properties required to create a new User
 interface TicketAttributes {
     id: string;
     title: string;
     price: number;
+    owner: UserDocument;
 }
 
 // interface that describes properties Ticket Model has
@@ -21,6 +23,7 @@ export interface TicketDocument extends mongoose.Document {
     title: string;
     price: number;
     version: number;
+    owner: UserDocument;
     isReserved(): Promise<boolean>;
 }
 
@@ -34,6 +37,10 @@ const ticketSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 0
+        },
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         },
     },
     {
@@ -60,9 +67,11 @@ ticketSchema.statics.build = (attrs: TicketAttributes) => {
     return new Ticket({
         _id: attrs.id,
         title: attrs.title,
-        price: attrs.price
+        price: attrs.price,
+        owner: attrs.owner
     });
 };
+
 ticketSchema.methods.isReserved = async function () {
     const existingOrder = await Order.findOne({
         ticket: this,

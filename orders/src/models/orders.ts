@@ -3,12 +3,13 @@ import { OrderStatus } from "@monkeytickets/common";
 
 import { TicketDocument } from "./tickets";
 import { updateIfCurrentPlugin } from "mongoose-update-if-current";
+import { UserDocument } from "./users";
 
 export { OrderStatus };
 
 // interface that describes properties required to create a new User
 interface OrderAttributes {
-    userId: string;
+    buyer: UserDocument;
     status: OrderStatus;
     expiresAt: Date;
     ticket: TicketDocument;
@@ -21,7 +22,7 @@ interface OrderModel extends mongoose.Model<OrderDocument> {
 
 // interface that describes properties Order Document has
 interface OrderDocument extends mongoose.Document {
-    userId: string;
+    buyer: UserDocument;
     version: number;
     status: OrderStatus;
     expiresAt: Date;
@@ -30,9 +31,9 @@ interface OrderDocument extends mongoose.Document {
 
 const orderSchema = new mongoose.Schema(
     {
-        userId: {
-            type: String,
-            required: true
+        buyer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         },
         status: {
             type: String,

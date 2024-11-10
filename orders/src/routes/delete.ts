@@ -15,12 +15,12 @@ const router = express.Router();
 router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const order = await Order.findById(id).populate('ticket');
+    const order = await Order.findById(id).populate('ticket').populate('buyer');
 
     if (!order) {
         throw new NotFoundError();
     }
-    if (order.userId !== req.currentUser!.id) {
+    if (order.buyer.id !== req.currentUser!.id) {
         throw new NotAuthorizedError();
     }
 

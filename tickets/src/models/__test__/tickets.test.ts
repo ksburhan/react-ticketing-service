@@ -1,11 +1,18 @@
+import mongoose from "mongoose";
 import { Ticket } from "../tickets";
+import { User } from "../users";
 
 it('implements optimistic concurrency control', async () => {
+
+    const user = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
     // Create instance of ticket
     const ticket = Ticket.build({
         title: 'concert',
         price: 20,
-        userId: '123'
+        owner: user,
     });
 
     // Save the ticket to the database
@@ -33,10 +40,15 @@ it('implements optimistic concurrency control', async () => {
 });
 
 it('increments the version number on multiple saves', async () => {
+    const user = User.build({
+        id: '123',
+        username: 'testUser'
+    })
+
     const ticket = Ticket.build({
         title: 'concert',
         price: 20,
-        userId: '123'
+        owner: user
     });
 
     await ticket.save();

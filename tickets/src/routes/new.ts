@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, validateRequest } from '@monkeytickets/common';
+import { NotFoundError, requireAuth, validateRequest } from '@monkeytickets/common';
 import { Ticket } from '../models/tickets';
 import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
 import { natsWrapper } from '../nats-wrapper';
+import { User } from '../models/users';
 
 const router = express.Router();
 
@@ -21,10 +22,15 @@ router.post('/api/tickets',
     async (req: Request, res: Response) => {
         const { title, price } = req.body;
 
+        const user = await User.findById(req.currentUser!.id)
+        if (!user) {
+            throw new NotFoundError();
+        }
+
         const ticket = Ticket.build({
             title,
             price,
-            userId: req.currentUser!.id
+            owner: user
         });
 
         await ticket.save();
@@ -33,7 +39,10 @@ router.post('/api/tickets',
             version: ticket.version,
             title: ticket.title,
             price: ticket.price,
-            userId: ticket.userId
+            owner: {
+                id: ticket.owner.id,
+                username: ticket.owner.username
+            }
         });
 
         res.status(201).send(ticket);

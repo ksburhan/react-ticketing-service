@@ -5,16 +5,30 @@ import { app } from "../../app";
 import { natsWrapper } from "../../nats-wrapper";
 import { Ticket } from "../../models/tickets";
 import { Order, OrderStatus } from "../../models/orders";
+import { User } from "../../models/users";
 
 it('marks an order as cancelled', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser1'
+    })
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20,
+        owner
     });
     await ticket.save();
 
-    const user = global.signin();
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser1'
+    })
+    await buyer.save();
+
+    const user = global.signin(buyer.id);
 
     const { body: order } = await request(app)
         .post('/api/orders')
@@ -34,14 +48,27 @@ it('marks an order as cancelled', async () => {
 });
 
 it('publishes an event', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser1'
+    })
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
-    const user = global.signin();
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser1'
+    })
+    await buyer.save();
+
+    const user = global.signin(buyer.id);
 
     const { body: order } = await request(app)
         .post('/api/orders')

@@ -4,8 +4,14 @@ import { natsWrapper } from "../../../nats-wrapper"
 import { OrderCreatedListener } from "../order-created-listener"
 import mongoose from "mongoose"
 import { Message } from "node-nats-streaming"
+import { User } from "../../../models/users"
 
 const setup = async () => {
+    const user = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await user.save()
     // Create instance of listener
     const listener = new OrderCreatedListener(natsWrapper.client)
 
@@ -13,7 +19,7 @@ const setup = async () => {
     const ticket = Ticket.build({
         title: 'concert',
         price: 99,
-        userId: 'me'
+        owner: user,
     })
     await ticket.save()
 
