@@ -4,10 +4,17 @@ import { TicketCreatedListener } from "../ticket-created-listener";
 import mongoose from "mongoose";
 import { Message } from "node-nats-streaming";
 import { Ticket } from "../../../models/tickets";
+import { User } from "../../../models/users";
 
 const setup = async () => {
     // create instance of listener
     const listener = new TicketCreatedListener(natsWrapper.client);
+
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await owner.save();
 
     // create fake data event
     const data: TicketCreatedEvent['data'] = {
@@ -15,7 +22,10 @@ const setup = async () => {
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 10,
-        userId: new mongoose.Types.ObjectId().toHexString(),
+        owner: {
+            id: owner.id,
+            username: owner.username
+        }
     };
 
     // create fake message object

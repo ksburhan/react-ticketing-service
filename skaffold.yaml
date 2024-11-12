@@ -14,7 +14,7 @@ build:
       context: client
       sync:
         manual:
-          - src: "src/**/*.ts"
+          - src: "src/**/*.js"
             dest: .
       docker:
         dockerfile: Dockerfile

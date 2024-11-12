@@ -1,10 +1,12 @@
 import request from "supertest";
 import { app } from "../../app";
+import { User } from "../../models/users";
+import mongoose from "mongoose";
 
-const createTicket = () => {
+const createTicket = (id: string) => {
     return request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(id))
         .send({
             title: 'test',
             price: 20
@@ -12,9 +14,15 @@ const createTicket = () => {
 }
 
 it('can fetch a list of tickets', async () => {
-    await createTicket();
-    await createTicket();
-    await createTicket();
+    const user = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await user.save()
+
+    await createTicket(user.id);
+    await createTicket(user.id);
+    await createTicket(user.id);
 
     const response = await request(app)
         .get('/api/tickets')

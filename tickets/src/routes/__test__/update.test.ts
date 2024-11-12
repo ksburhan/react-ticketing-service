@@ -4,6 +4,16 @@ import mongoose from "mongoose";
 import { app } from "../../app";
 import { natsWrapper } from "../../nats-wrapper";
 import { Ticket } from "../../models/tickets";
+import { User } from "../../models/users";
+
+const createUser = async () => {
+    const user = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await user.save()
+    return user
+}
 
 it('returns a 404 if provided id does not exist', async () => {
     const id = new mongoose.Types.ObjectId().toHexString();
@@ -29,9 +39,11 @@ it('returns a 401 if user is not authenticated', async () => {
 });
 
 it('returns a 401 if user id does not own ticket', async () => {
+    const user = await createUser();
+
     const response = await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({
             title: 'test',
             price: 20
@@ -78,7 +90,8 @@ it('returns a 400 if user provides invalid title or price', async () => {
 });
 
 it('updates the ticket provided valid inputs', async () => {
-    const cookie = global.signin();
+    const user = await createUser();
+    const cookie = global.signin(user.id);
 
     const response = await request(app)
         .post('/api/tickets')
@@ -106,7 +119,8 @@ it('updates the ticket provided valid inputs', async () => {
 });
 
 it('publishes an event', async () => {
-    const cookie = global.signin();
+    const user = await createUser();
+    const cookie = global.signin(user.id);
 
     const response = await request(app)
         .post('/api/tickets')
@@ -129,7 +143,8 @@ it('publishes an event', async () => {
 })
 
 it('rejects request if ticket is reserved', async () => {
-    const cookie = global.signin();
+    const user = await createUser();
+    const cookie = global.signin(user.id);
 
     const response = await request(app)
         .post('/api/tickets')

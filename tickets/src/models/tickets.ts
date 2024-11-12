@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import { updateIfCurrentPlugin } from "mongoose-update-if-current";
+import { UserDocument } from "./users";
 
 // interface that describes properties required to create a new User
 interface TicketAttributes {
     title: string;
     price: number;
-    userId: string;
+    owner: UserDocument;
 }
 
 // interface that describes properties Ticket Model has
@@ -17,7 +18,7 @@ interface TicketModel extends mongoose.Model<TicketDocument> {
 interface TicketDocument extends mongoose.Document {
     title: string;
     price: number;
-    userId: string;
+    owner: UserDocument;
     version: number;
     orderId?: string;
 }
@@ -32,9 +33,9 @@ const ticketSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
-        userId: {
-            type: String,
-            required: true
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         },
         orderId: {
             type: String,

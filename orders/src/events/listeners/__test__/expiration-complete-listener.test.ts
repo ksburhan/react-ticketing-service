@@ -4,20 +4,34 @@ import { ExpirationCompleteListener } from "../expiration-complete-listener";
 import { Ticket } from "../../../models/tickets";
 import { Order, OrderStatus } from "../../../models/orders";
 import { ExpirationCompleteEvent } from "@monkeytickets/common";
+import { User } from "../../../models/users";
 
 const setup = async () => {
     const listener = new ExpirationCompleteListener(natsWrapper.client);
+
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await owner.save();
+
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await buyer.save()
 
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20,
+        owner
     })
     await ticket.save()
 
     const order = Order.build({
         status: OrderStatus.Created,
-        userId: 'me',
+        buyer: buyer,
         expiresAt: new Date(),
         ticket,
     })

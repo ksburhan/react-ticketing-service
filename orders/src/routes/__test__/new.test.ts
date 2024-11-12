@@ -5,6 +5,7 @@ import { Ticket } from '../../models/tickets';
 import { natsWrapper } from "../../nats-wrapper";
 import mongoose from "mongoose";
 import { Order, OrderStatus } from "../../models/orders";
+import { User } from "../../models/users";
 
 it('has a route handler listening to /api/orders for post requests', async () => {
     const response = await request(app)
@@ -43,15 +44,28 @@ it('returns and error if the ticket does not exist', async () => {
 });
 
 it('returns and error if the ticket is already reserved', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await buyer.save();
+
     const order = Order.build({
-        userId: 'ajshdkasjdhajkd',
+        buyer: buyer,
         status: OrderStatus.Created,
         expiresAt: new Date(),
         ticket: ticket,
@@ -60,7 +74,7 @@ it('returns and error if the ticket is already reserved', async () => {
 
     await request(app)
         .post('/api/orders')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(buyer.id))
         .send({
             ticketId: ticket.id
         })
@@ -68,16 +82,29 @@ it('returns and error if the ticket is already reserved', async () => {
 });
 
 it('reserves a ticket', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await buyer.save();
+
     await request(app)
         .post('/api/orders')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(buyer.id))
         .send({
             ticketId: ticket.id
         })
@@ -85,16 +112,29 @@ it('reserves a ticket', async () => {
 });
 
 it('publishes an event', async () => {
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await owner.save();
+
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
-        price: 20
+        price: 20,
+        owner
     });
     await ticket.save();
 
+    const buyer = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser',
+    });
+    await buyer.save();
+
     await request(app)
         .post('/api/orders')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(buyer.id))
         .send({
             ticketId: ticket.id
         })

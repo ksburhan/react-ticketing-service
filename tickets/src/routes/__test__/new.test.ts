@@ -3,6 +3,17 @@ import request from "supertest";
 import { app } from "../../app";
 import { Ticket } from '../../models/tickets';
 import { natsWrapper } from "../../nats-wrapper";
+import { User } from "../../models/users";
+import mongoose from "mongoose";
+
+const createUser = async () => {
+    const user = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await user.save()
+    return user
+}
 
 it('has a route handler listening to /api/tickets for post requests', async () => {
     const response = await request(app)
@@ -29,40 +40,43 @@ it('returns status other than 401 if user is signed in', async () => {
 });
 
 it('returns an error if an invalid title is provided', async () => {
+    const user = await createUser()
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({ title: '', price: 10 })
         .expect(400);
 
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({ price: 10 })
         .expect(400);
 });
 
 it('returns an error if an invalid price is provided', async () => {
+    const user = await createUser()
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({ title: 'test', price: -10 })
         .expect(400);
 
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({ title: 'test', })
         .expect(400);
 });
 
 it('creates a ticket with valid inputs', async () => {
+    const user = await createUser()
     let tickets = await Ticket.find({});
     expect(tickets.length).toEqual(0);
 
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({
             title: 'test',
             price: 20,
@@ -73,12 +87,14 @@ it('creates a ticket with valid inputs', async () => {
     expect(tickets.length).toEqual(1);
     expect(tickets[0].price).toEqual(20);
     expect(tickets[0].title).toEqual('test');
+    expect(tickets[0].owner).not.toBeNull();
 });
 
 it('publishes an event', async () => {
+    const user = await createUser()
     await request(app)
         .post('/api/tickets')
-        .set('Cookie', global.signin())
+        .set('Cookie', global.signin(user.id))
         .send({
             title: 'test',
             price: 20,

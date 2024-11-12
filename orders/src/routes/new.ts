@@ -7,6 +7,7 @@ import { Order } from '../models/orders';
 import { Ticket } from '../models/tickets';
 import { natsWrapper } from '../nats-wrapper';
 import { OrderCreatedPublisher } from '../events/publishers/order-created-publisher';
+import { User } from '../models/users';
 
 const router = express.Router();
 
@@ -41,9 +42,14 @@ router.post('/api/orders',
         const expiration = new Date();
         expiration.setSeconds(expiration.getSeconds() + EXPIRATION_WINDOW_SECONDS);
 
+        const buyer = await User.findById(req.currentUser!.id)
+        if (!buyer) {
+            throw new NotFoundError();
+        }
+
         // Build order and save to database
         const order = Order.build({
-            userId: req.currentUser!.id,
+            buyer: buyer,
             status: OrderStatus.Created,
             expiresAt: expiration,
             ticket: ticket
@@ -55,7 +61,7 @@ router.post('/api/orders',
             id: order.id,
             version: order.version,
             status: order.status,
-            userId: order.userId,
+            userId: order.buyer.id,
             expiresAt: order.expiresAt.toISOString(),
             ticket: {
                 id: ticket.id,

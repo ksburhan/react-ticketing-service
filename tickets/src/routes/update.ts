@@ -27,7 +27,7 @@ router.put(
     ],
     validateRequest,
     async (req: Request, res: Response) => {
-        const ticket = await Ticket.findById(req.params.id);
+        const ticket = await Ticket.findById(req.params.id).populate('owner');
 
         if (!ticket) {
             throw new NotFoundError();
@@ -37,7 +37,7 @@ router.put(
             throw new BadRequestError('Cannot edit a reserved ticket')
         }
 
-        if (ticket.userId !== req.currentUser!.id) {
+        if (ticket.owner.id !== req.currentUser!.id) {
             throw new NotAuthorizedError();
         }
 
@@ -52,7 +52,10 @@ router.put(
             version: ticket.version,
             title: ticket.title,
             price: ticket.price,
-            userId: ticket.userId
+            owner: {
+                id: ticket.owner.id,
+                username: ticket.owner.username,
+            }
         });
 
         res.send(ticket);

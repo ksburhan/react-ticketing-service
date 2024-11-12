@@ -4,7 +4,7 @@ const buildClient = ({ req }) => {
     if (typeof window === 'undefined') {
         //server
         return axios.create({
-            baseURL: 'http://www.monkey-ticket.site',
+            baseURL: process.env.BASE_URL,
             headers: req.headers
         })
     } else {

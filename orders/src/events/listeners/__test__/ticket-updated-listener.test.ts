@@ -4,16 +4,24 @@ import mongoose from "mongoose";
 import { Message } from "node-nats-streaming";
 import { Ticket } from "../../../models/tickets";
 import { TicketUpdatedListener } from "../ticket-updated-listener";
+import { User } from "../../../models/users";
 
 const setup = async () => {
     // create instance of listener
     const listener = new TicketUpdatedListener(natsWrapper.client);
+
+    const owner = User.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
+        username: 'testUser'
+    })
+    await owner.save();
 
     // create and save a ticket
     const ticket = Ticket.build({
         id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 10,
+        owner: owner
     });
     await ticket.save();
 
@@ -23,7 +31,10 @@ const setup = async () => {
         version: ticket.version + 1,
         title: 'updated concert',
         price: 20,
-        userId: new mongoose.Types.ObjectId().toHexString(),
+        owner: {
+            id: owner.id,
+            username: owner.username
+        }
     };
 
     // create fake message object
