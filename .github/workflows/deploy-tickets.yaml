@@ -16,8 +16,9 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - run: docker push ksburhan/tickets
-      - uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DOCTL_SECRET }}
-      - run: doctl kubernetes cluster kubeconfig save ticketing
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
       - run: kubectl rollout restart deployment tickets-depl

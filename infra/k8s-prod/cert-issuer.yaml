@@ -9,7 +9,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@monkey-ticket.site
+    email: burhan.koeseler@hotmail.de
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
