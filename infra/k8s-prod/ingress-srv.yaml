@@ -4,8 +4,13 @@ metadata:
   name: ingress-service
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - www.monkey-ticket.site
+      secretName: monkey-ticket-tls
   rules:
     - host: www.monkey-ticket.site
       http:

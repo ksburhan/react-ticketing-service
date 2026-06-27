@@ -10,8 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DOCTL_SECRET }}
-      - run: doctl kubernetes cluster kubeconfig save ticketing
-      - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
+      # Authenticate to the k3s cluster from a base64-encoded kubeconfig
+      # stored as the KUBE_CONFIG repo secret. Generate it once with:
+      #   base64 -i ~/.kube/config | pbcopy
+      # (kubeconfig must use the VPS public IP, not 127.0.0.1)
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+      # Prod is assembled via Kustomize (infra/kustomization.yaml): all
+      # services + ONE shared mongo + resource limits + TLS ingress.
+      - run: kubectl apply -k infra

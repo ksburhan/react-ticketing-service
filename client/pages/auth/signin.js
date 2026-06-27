@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import Router from 'next/router';
 import useRequest from '../../hooks/use-request';
 
@@ -14,32 +15,55 @@ const SignIn = () => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-
         await doRequest();
-    }
+    };
 
-    return <form onSubmit={onSubmit}>
-        <h1>Sign in</h1>
-        <div className="form-group">
-            <label>Email Address</label>
-            <input
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="form-control"
-            />
+    return (
+        <div className="mt-auth-shell">
+            <div className="mt-auth-card">
+                <h1>Welcome back</h1>
+                <p className="lead">Sign in to buy and sell Monkey Island tickets.</p>
+
+                <form onSubmit={onSubmit} className="mt-form">
+                    <div className="mb-3">
+                        <label htmlFor="email">Email address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="form-control"
+                            placeholder="you@example.com"
+                            autoComplete="email"
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="form-control"
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                        />
+                    </div>
+
+                    {errors}
+
+                    <button className="mt-btn mt-btn-primary mt-btn-block">
+                        Sign in
+                    </button>
+                </form>
+
+                <p className="swap">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/auth/signup">Create one</Link>
+                </p>
+            </div>
         </div>
-        <div className="form-group">
-            <label>Password</label>
-            <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="form-control"
-            />
-        </div>
-        {errors}
-        <button className="btn btn-primary">Sign In</button>
-    </form>;
+    );
 };
 
 export default SignIn;
