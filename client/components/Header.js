@@ -2,36 +2,31 @@ import Link from 'next/link';
 
 const Header = ({ currentUser }) => {
     const links = [
-        !currentUser && { label: 'Sign Up', href: '/auth/signup' },
         !currentUser && { label: 'Sign In', href: '/auth/signin' },
-        currentUser && { label: 'Sell Tickets', href: '/tickets/new' },
+        !currentUser && { label: 'Sign Up', href: '/auth/signup', cta: true },
         currentUser && { label: 'My Orders', href: '/orders' },
+        currentUser && { label: 'Sell Tickets', href: '/tickets/new', cta: true },
         currentUser && { label: 'Sign Out', href: '/auth/signout' },
     ]
-        .filter(linkConfig => linkConfig)
-        .map(({ label, href }) => {
-            return (
-                <li key={href} className="nav-item">
-                    <Link className="nav-link" href={href}>
-                        {label}
-                    </Link>
-                </li>
-            )
-        });
+        .filter(Boolean)
+        .map(({ label, href, cta }) => (
+            <li key={href} className="nav-item">
+                <Link className={`nav-link${cta ? ' cta' : ''}`} href={href}>
+                    {label}
+                </Link>
+            </li>
+        ));
 
     return (
-        <nav className="navbar navbar-light bg-light">
-            <Link className="nav-link" href="/">
-                Tickets to Monkey Island
+        <nav className="mt-navbar d-flex align-items-center justify-content-between">
+            <Link className="mt-brand" href="/">
+                <span className="mt-brand-mark">M</span>
+                <span>Monkey Tickets</span>
             </Link>
 
-            <div className="d-flex justify-content-end">
-                <ul className="nav d-flex align-items-center">
-                    {links}
-                </ul>
-            </div>
+            <ul className="nav align-items-center gap-1 mb-0">{links}</ul>
         </nav>
     );
-}
+};
 
 export default Header;
