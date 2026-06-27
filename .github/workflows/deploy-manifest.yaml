@@ -14,4 +14,6 @@ jobs:
         with:
           token: ${{ secrets.DOCTL_SECRET }}
       - run: doctl kubernetes cluster kubeconfig save ticketing
-      - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
+      # Prod is assembled via Kustomize (infra/kustomization.yaml): all
+      # services + ONE shared mongo + resource limits + TLS ingress.
+      - run: kubectl apply -k infra
