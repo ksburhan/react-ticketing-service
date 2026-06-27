@@ -1,17 +1,7 @@
-# PRODUCTION assembly. Deploy with:  kubectl apply -k infra
-#
-# Local dev is unchanged: `skaffold dev` still applies infra/k8s/* and
-# infra/k8s-dev/* directly (4 separate mongos, no resource limits).
-#
-# This overlay deliberately does NOT include the four per-service
-# *-mongo-depl.yaml files from infra/k8s/. Instead it adds one shared
-# mongo (mongo-shared-depl.yaml) and repoints each service's MONGO_URI
-# to it below, keeping a distinct logical DB per service.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  # --- base services (from infra/k8s, mongos intentionally excluded) ---
   - k8s/auth-depl.yaml
   - k8s/tickets-depl.yaml
   - k8s/orders-depl.yaml
@@ -20,14 +10,12 @@ resources:
   - k8s/expiration-redis-depl.yaml
   - k8s/nats-depl.yaml
   - k8s/client-depl.yaml
-  # --- prod-only resources ---
   - k8s-prod/mongo-shared-depl.yaml
   - k8s-prod/client-config.yml
   - k8s-prod/ingress-srv.yaml
   - k8s-prod/cert-issuer.yaml
 
 patches:
-  # auth: point at shared mongo + add resource requests/limits
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -48,7 +36,16 @@ patches:
                   limits:
                     cpu: 250m
                     memory: 192Mi
-  # tickets
+                readinessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -69,7 +66,16 @@ patches:
                   limits:
                     cpu: 250m
                     memory: 192Mi
-  # orders
+                readinessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -90,7 +96,16 @@ patches:
                   limits:
                     cpu: 250m
                     memory: 192Mi
-  # payments
+                readinessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -111,7 +126,16 @@ patches:
                   limits:
                     cpu: 250m
                     memory: 192Mi
-  # expiration (no DB, resources only)
+                readinessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -129,7 +153,6 @@ patches:
                   limits:
                     cpu: 250m
                     memory: 192Mi
-  # client (Next.js, a little more memory)
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -147,7 +170,16 @@ patches:
                   limits:
                     cpu: 300m
                     memory: 256Mi
-  # nats (container is literally named "name" in the base manifest)
+                readinessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                livenessProbe:
+                  tcpSocket:
+                    port: 3000
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
@@ -165,7 +197,6 @@ patches:
                   limits:
                     cpu: 150m
                     memory: 128Mi
-  # redis
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment

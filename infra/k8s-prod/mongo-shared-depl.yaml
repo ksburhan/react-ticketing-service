@@ -1,8 +1,3 @@
-# Single shared MongoDB for prod. Replaces the four per-service mongo
-# deployments from infra/k8s/* (which are NOT included by the prod
-# kustomization). Each service keeps its own logical database via a
-# distinct DB name in MONGO_URI (mongo-srv:27017/<service>), so the
-# "each service owns its DB" boundary is preserved.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -13,7 +8,6 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  # No storageClassName: uses the cluster default (e.g. k3s local-path).
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -21,6 +15,8 @@ metadata:
   name: mongo-depl
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mongo
@@ -43,7 +39,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: 500m
-              memory: 512Mi
+              memory: 1Gi
       volumes:
         - name: mongo-data
           persistentVolumeClaim:
