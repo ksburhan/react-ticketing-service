@@ -1,0 +1,185 @@
+# PRODUCTION assembly. Deploy with:  kubectl apply -k infra
+#
+# Local dev is unchanged: `skaffold dev` still applies infra/k8s/* and
+# infra/k8s-dev/* directly (4 separate mongos, no resource limits).
+#
+# This overlay deliberately does NOT include the four per-service
+# *-mongo-depl.yaml files from infra/k8s/. Instead it adds one shared
+# mongo (mongo-shared-depl.yaml) and repoints each service's MONGO_URI
+# to it below, keeping a distinct logical DB per service.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # --- base services (from infra/k8s, mongos intentionally excluded) ---
+  - k8s/auth-depl.yaml
+  - k8s/tickets-depl.yaml
+  - k8s/orders-depl.yaml
+  - k8s/payments-depl.yaml
+  - k8s/expiration-depl.yaml
+  - k8s/expiration-redis-depl.yaml
+  - k8s/nats-depl.yaml
+  - k8s/client-depl.yaml
+  # --- prod-only resources ---
+  - k8s-prod/mongo-shared-depl.yaml
+  - k8s-prod/client-config.yml
+  - k8s-prod/ingress-srv.yaml
+  - k8s-prod/cert-issuer.yaml
+
+patches:
+  # auth: point at shared mongo + add resource requests/limits
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: auth-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: auth
+                env:
+                  - name: MONGO_URI
+                    value: 'mongodb://mongo-srv:27017/auth'
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 64Mi
+                  limits:
+                    cpu: 250m
+                    memory: 192Mi
+  # tickets
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: tickets-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: tickets
+                env:
+                  - name: MONGO_URI
+                    value: 'mongodb://mongo-srv:27017/tickets'
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 64Mi
+                  limits:
+                    cpu: 250m
+                    memory: 192Mi
+  # orders
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: orders-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: orders
+                env:
+                  - name: MONGO_URI
+                    value: 'mongodb://mongo-srv:27017/orders'
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 64Mi
+                  limits:
+                    cpu: 250m
+                    memory: 192Mi
+  # payments
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: payments-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: payments
+                env:
+                  - name: MONGO_URI
+                    value: 'mongodb://mongo-srv:27017/payments'
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 64Mi
+                  limits:
+                    cpu: 250m
+                    memory: 192Mi
+  # expiration (no DB, resources only)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: expiration-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: expiration
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 64Mi
+                  limits:
+                    cpu: 250m
+                    memory: 192Mi
+  # client (Next.js, a little more memory)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: client-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: client
+                resources:
+                  requests:
+                    cpu: 50m
+                    memory: 96Mi
+                  limits:
+                    cpu: 300m
+                    memory: 256Mi
+  # nats (container is literally named "name" in the base manifest)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: nats-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: name
+                resources:
+                  requests:
+                    cpu: 25m
+                    memory: 32Mi
+                  limits:
+                    cpu: 150m
+                    memory: 128Mi
+  # redis
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: expiration-redis-depl
+      spec:
+        template:
+          spec:
+            containers:
+              - name: expiration-redis
+                resources:
+                  requests:
+                    cpu: 25m
+                    memory: 32Mi
+                  limits:
+                    cpu: 150m
+                    memory: 128Mi
