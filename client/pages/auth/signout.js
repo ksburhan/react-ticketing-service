@@ -3,7 +3,7 @@ import Router from 'next/router';
 import useRequest from '../../hooks/use-request';
 
 const SignOut = () => {
-    const { doRequest, errors } = useRequest({
+    const { doRequest } = useRequest({
         url: '/api/users/signout',
         method: 'post',
         body: {},
@@ -14,7 +14,17 @@ const SignOut = () => {
         doRequest();
     }, []);
 
-    return <div>Signing you out...</div>;
+    return (
+        <div className="mt-auth-shell">
+            <div className="mt-auth-card text-center">
+                <div className="d-flex justify-content-center mb-3">
+                    <div className="mt-spinner" />
+                </div>
+                <h1>Signing you out…</h1>
+                <p className="lead mb-0">See you next time.</p>
+            </div>
+        </div>
+    );
 };
 
 export default SignOut;

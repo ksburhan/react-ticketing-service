@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
+import '../styles/globals.css';
 import buildClient from '../api/build-client';
 import Header from '../components/Header';
 
@@ -6,9 +7,11 @@ const AppComponent = ({ Component, pageProps, currentUser }) => {
     return (
         <div>
             <Header currentUser={currentUser} />
-            <div className="container">
-                <Component currentUser={currentUser} {...pageProps} />
-            </div>
+            <main className="mt-page">
+                <div className="container">
+                    <Component currentUser={currentUser} {...pageProps} />
+                </div>
+            </main>
         </div>
     );
 };
