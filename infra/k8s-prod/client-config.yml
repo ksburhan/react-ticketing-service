@@ -3,7 +3,4 @@ kind: ConfigMap
 metadata:
   name: ticketing-config
 data:
-  # In-cluster URL for server-side rendering requests, so SSR doesn't hairpin
-  # through the public host and hit the http->https redirect. Browser-side
-  # requests use a relative '/' baseURL and go through the public ingress.
   BASE_URL: 'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local'
