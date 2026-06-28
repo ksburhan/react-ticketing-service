@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "start": "ts-node-dev --poll src/index.ts",
     "test": "jest --watchAll --no-cache"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "testTimeout": 60000,
     "setupFilesAfterEnv": [
       "./src/test/setup.ts"
     ]
