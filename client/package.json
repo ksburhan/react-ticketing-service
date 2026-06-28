@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "next",
     "dev:mock": "NEXT_PUBLIC_USE_MOCKS=1 next dev",
-    "dev:mock:signedout": "NEXT_PUBLIC_USE_MOCKS=1 NEXT_PUBLIC_MOCK_SIGNED_OUT=1 next dev"
+    "dev:mock:signedout": "NEXT_PUBLIC_USE_MOCKS=1 NEXT_PUBLIC_MOCK_SIGNED_OUT=1 next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "keywords": [],
   "author": "",

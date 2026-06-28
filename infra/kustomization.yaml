@@ -169,7 +169,7 @@ patches:
                     memory: 96Mi
                   limits:
                     cpu: 300m
-                    memory: 256Mi
+                    memory: 384Mi
                 readinessProbe:
                   tcpSocket:
                     port: 3000
