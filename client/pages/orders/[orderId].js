@@ -9,6 +9,9 @@ import {
 import useRequest from '../../hooks/use-request';
 import Router from 'next/router';
 
+// TODO: move to NEXT_PUBLIC_STRIPE_KEY for per-environment config.
+// Safe to hardcode (publishable key is public by design) but not configurable.
+// See docs/stripe-publishable-key-config.md.
 const STRIPE_PUBLISHABLE_KEY =
     'pk_test_51Q22MMRwMqUJwVBzfJt204TiuznP87mURo2anlgEcxdwoqW8KGvP22K6bWjQzOtTbcmxzUSMBYxSc65fKWkctsjX00Ev4B6lDD';
 
