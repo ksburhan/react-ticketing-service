@@ -4,6 +4,7 @@ import { json } from "body-parser";
 import cookieSession from "cookie-session";
 import { errorHandler, NotFoundError, currentUser } from "@monkeytickets/common";
 import { createChargeRouter } from "./routes/new";
+import { confirmPaymentRouter } from "./routes/confirm";
 
 const app = express();
 app.set('trust proxy', true);
@@ -15,6 +16,7 @@ app.use(cookieSession({
 app.use(currentUser);
 
 app.use(createChargeRouter);
+app.use(confirmPaymentRouter);
 
 app.all('*', async (req, res) => {
   throw new NotFoundError();

@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react';
-import StripeCheckout from 'react-stripe-checkout';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+    Elements,
+    CardElement,
+    useStripe,
+    useElements,
+} from '@stripe/react-stripe-js';
 import useRequest from '../../hooks/use-request';
 import Router from 'next/router';
+
+const STRIPE_PUBLISHABLE_KEY =
+    'pk_test_51Q22MMRwMqUJwVBzfJt204TiuznP87mURo2anlgEcxdwoqW8KGvP22K6bWjQzOtTbcmxzUSMBYxSc65fKWkctsjX00Ev4B6lDD';
+
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('en-US', {
@@ -16,14 +27,122 @@ const formatTime = (seconds) => {
     return `${m}:${String(s).padStart(2, '0')}`;
 };
 
-const OrderShow = ({ currentUser, order }) => {
-    const [timeLeft, setTimeLeft] = useState(null);
+const cardElementOptions = {
+    style: {
+        base: {
+            color: '#1f2330',
+            fontSize: '16px',
+            '::placeholder': { color: '#6b7184' },
+        },
+        invalid: { color: '#dc2626' },
+    },
+};
+
+const CheckoutForm = ({ order }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [submitting, setSubmitting] = useState(false);
+    const [cardError, setCardError] = useState(null);
+
     const { doRequest, errors } = useRequest({
         url: '/api/payments',
         method: 'post',
         body: { orderId: order.id },
-        onSuccess: () => Router.push('/orders'),
     });
+
+    const confirmRequest = useRequest({
+        url: '/api/payments/confirm',
+        method: 'post',
+        body: { orderId: order.id },
+    });
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (!stripe || !elements || submitting) return;
+
+        setSubmitting(true);
+        setCardError(null);
+
+        const { error: methodError, paymentMethod } =
+            await stripe.createPaymentMethod({
+                type: 'card',
+                card: elements.getElement(CardElement),
+            });
+
+        if (methodError) {
+            setCardError(methodError.message);
+            setSubmitting(false);
+            return;
+        }
+
+        const payment = await doRequest({ paymentMethodId: paymentMethod.id });
+        if (!payment) {
+            setSubmitting(false);
+            return;
+        }
+
+        if (payment.requiresAction) {
+            const { error: confirmError, paymentIntent } =
+                await stripe.confirmCardPayment(payment.clientSecret);
+
+            if (confirmError) {
+                setCardError(confirmError.message);
+                setSubmitting(false);
+                return;
+            }
+
+            const finalized = await confirmRequest.doRequest({
+                paymentIntentId: paymentIntent.id,
+            });
+            if (!finalized) {
+                setSubmitting(false);
+                return;
+            }
+        }
+
+        Router.push('/orders');
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <div
+                style={{
+                    padding: '0.85rem 1rem',
+                    border: '1px solid var(--mt-border, #e5e7eb)',
+                    borderRadius: '8px',
+                    background: 'var(--mt-surface, #ffffff)',
+                    marginBottom: '1rem',
+                }}
+            >
+                <CardElement options={cardElementOptions} />
+            </div>
+
+            {cardError && (
+                <div className="mt-alert">
+                    <h4>Something went wrong</h4>
+                    <ul>
+                        <li>{cardError}</li>
+                    </ul>
+                </div>
+            )}
+            {errors}
+            {confirmRequest.errors}
+
+            <button
+                type="submit"
+                className="btn btn-primary w-100"
+                disabled={!stripe || submitting}
+            >
+                {submitting
+                    ? 'Processing…'
+                    : `Pay ${formatPrice(order.ticket.price)}`}
+            </button>
+        </form>
+    );
+};
+
+const OrderShow = ({ order }) => {
+    const [timeLeft, setTimeLeft] = useState(null);
 
     useEffect(() => {
         const findTimeLeft = () => {
@@ -71,17 +190,10 @@ const OrderShow = ({ currentUser, order }) => {
                                 Time left to pay: {timeLeft === null ? '…' : formatTime(timeLeft)}
                             </span>
 
-                            {errors}
-
-                            <div className="d-flex justify-content-center mt-4">
-                                <StripeCheckout
-                                    token={({ id }) => doRequest({ token: id })}
-                                    stripeKey="pk_test_51Q22MMRwMqUJwVBzfJt204TiuznP87mURo2anlgEcxdwoqW8KGvP22K6bWjQzOtTbcmxzUSMBYxSc65fKWkctsjX00Ev4B6lDD"
-                                    amount={order.ticket.price * 100}
-                                    email={currentUser?.email}
-                                    name="Monkey Tickets"
-                                    description={order.ticket.title}
-                                />
+                            <div className="mt-4">
+                                <Elements stripe={stripePromise}>
+                                    <CheckoutForm order={order} />
+                                </Elements>
                             </div>
                         </>
                     )}

@@ -7,10 +7,10 @@ import { recordPayment } from '../record-payment';
 
 const router = express.Router();
 
-router.post('/api/payments',
+router.post('/api/payments/confirm',
     requireAuth,
     [
-        body('paymentMethodId')
+        body('paymentIntentId')
             .not()
             .isEmpty(),
         body('orderId')
@@ -19,7 +19,7 @@ router.post('/api/payments',
     ],
     validateRequest,
     async (req: Request, res: Response) => {
-        const { paymentMethodId, orderId } = req.body;
+        const { paymentIntentId, orderId } = req.body;
 
         const order = await Order.findById(orderId);
 
@@ -33,24 +33,10 @@ router.post('/api/payments',
             throw new BadRequestError('Cannot pay for cancelled order!');
         }
 
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: order.price * 100,
-            currency: 'eur',
-            payment_method: paymentMethodId,
-            confirm: true,
-            automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
-        });
-
-        if (paymentIntent.status === 'requires_action') {
-            return res.status(200).send({
-                requiresAction: true,
-                clientSecret: paymentIntent.client_secret,
-                paymentIntentId: paymentIntent.id,
-            });
-        }
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
         if (paymentIntent.status !== 'succeeded') {
-            throw new BadRequestError('Payment failed');
+            throw new BadRequestError('Payment not completed');
         }
 
         const payment = await recordPayment(order.id, paymentIntent.id);
@@ -58,4 +44,4 @@ router.post('/api/payments',
         res.status(201).send({ id: payment.id });
     });
 
-export { router as createChargeRouter };
+export { router as confirmPaymentRouter };
